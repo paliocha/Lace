@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import statistics
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -181,9 +182,24 @@ def _group_by_cluster(
 # ---------------------------------------------------------------------------
 
 
+def _compute_n50(lengths: list[int]) -> int:
+    """Return the N50 of a list of sequence lengths."""
+    if not lengths:
+        return 0
+    sorted_lens = sorted(lengths, reverse=True)
+    half = sum(sorted_lens) / 2
+    cumulative = 0
+    for length in sorted_lens:
+        cumulative += length
+        if cumulative >= half:
+            return length
+    return sorted_lens[-1]  # pragma: no cover
+
+
 def _log_input_summary(
     n_transcripts: int,
     total_bases: int,
+    lengths: list[int],
     n_total_clusters: int,
     n_multi: int,
     n_singletons: int,
@@ -192,10 +208,14 @@ def _log_input_summary(
 ) -> None:
     """Print the input-side statistics table."""
     avg_len = total_bases / n_transcripts if n_transcripts else 0
+    med_len = statistics.median(lengths) if lengths else 0
+    n50 = _compute_n50(lengths)
     log.info("")
     log.info("  %-34s %s", "Transcripts in FASTA:", f"{n_transcripts:,}")
     log.info("  %-34s %s bp", "  Total bases:", f"{total_bases:,}")
     log.info("  %-34s %s bp", "  Avg transcript length:", f"{avg_len:,.0f}")
+    log.info("  %-34s %s bp", "  Median transcript length:", f"{med_len:,.0f}")
+    log.info("  %-34s %s bp", "  N50:", f"{n50:,}")
     log.info("  %-34s %s", "Corset clusters (total):", f"{n_total_clusters:,}")
     log.info("  %-34s %s", "  Multi-transcript clusters:", f"{n_multi:,}")
     log.info("  %-34s %s", "  Singleton clusters:", f"{n_singletons:,}")
@@ -268,11 +288,14 @@ def _log_output_summary(
     n_failed: int,
     n_transcripts: int,
     total_out_bases: int,
+    out_lengths: list[int],
     elapsed: float,
 ) -> None:
     """Print the output-side statistics table."""
     reduction_pct = (1 - n_written / n_transcripts) * 100 if n_transcripts else 0
     avg_st_len = total_out_bases / n_written if n_written else 0
+    med_st_len = statistics.median(out_lengths) if out_lengths else 0
+    n50 = _compute_n50(out_lengths)
     log.info("")
     log.info("  %-34s %s", "SuperTranscripts written:", f"{n_written:,}")
     log.info("  %-34s %s", "  Assembled (multi-transcript):", f"{n_assembled:,}")
@@ -281,6 +304,8 @@ def _log_output_summary(
         log.warning("  %-34s %d", "  Failed:", n_failed)
     log.info("  %-34s %s bp", "  Total bases:", f"{total_out_bases:,}")
     log.info("  %-34s %s bp", "  Avg SuperTranscript length:", f"{avg_st_len:,.0f}")
+    log.info("  %-34s %s bp", "  Median SuperTranscript length:", f"{med_st_len:,.0f}")
+    log.info("  %-34s %s bp", "  N50:", f"{n50:,}")
     log.info(
         "  %-34s %.1f%% (%s \u2192 %s sequences)",
         "Redundancy reduction:",
@@ -312,14 +337,16 @@ def split_and_build(
 
     # -- 2) Parse FASTA file -----------------------------------------------
     transcripts, gene_of = _parse_transcripts(genome_path, cluster_map, single_clusters)
-    total_in_bases = sum(len(seq) for seq in transcripts.values())
+    in_lengths = [len(seq) for seq in transcripts.values()]
+    total_in_bases = sum(in_lengths)
 
     # -- 3) Group transcripts by cluster (in-memory, IO1) ------------------
     gene_transcripts, n_capped = _group_by_cluster(gene_of, transcripts, max_tran)
     n_multi = len(gene_transcripts)
 
     _log_input_summary(
-        len(transcripts), total_in_bases, len(cluster_counts), n_multi,
+        len(transcripts), total_in_bases, in_lengths,
+        len(cluster_counts), n_multi,
         len(single_clusters), max_tran, n_capped,
     )
 
@@ -333,7 +360,7 @@ def split_and_build(
     gene_order = [g for g, _ in sorted_genes]
 
     # -- 5) Write SuperDuper.fasta and SuperDuper.gff ----------------------
-    n_written, total_out_bases = _write_outputs(
+    n_written, total_out_bases, out_lengths = _write_outputs(
         out_dir, gene_order, results_map, cluster_map,
         single_clusters, transcripts,
     )
@@ -342,14 +369,15 @@ def split_and_build(
     _log_output_summary(
         n_written, n_multi - n_failed, len(single_clusters),
         n_failed, len(transcripts),
-        total_out_bases, time.time() - start_time,
+        total_out_bases, out_lengths, time.time() - start_time,
     )
 
 
 def _write_multi(fasta_fh, gff_fh, gene_order, results_map):
-    """Write multi-transcript SuperTranscripts. Returns (count, bases)."""
+    """Write multi-transcript SuperTranscripts. Returns (count, bases, lengths)."""
     count = 0
     bases = 0
+    lengths: list[int] = []
     for gene_id in gene_order:
         res = results_map.get(gene_id)
         if res is None or not res.seq:
@@ -360,15 +388,18 @@ def _write_multi(fasta_fh, gff_fh, gene_order, results_map):
         )
         fasta_fh.write(f"{res.seq}\n")
         gff_fh.write(res.anno)
+        seq_len = len(res.seq)
         count += 1
-        bases += len(res.seq)
-    return count, bases
+        bases += seq_len
+        lengths.append(seq_len)
+    return count, bases, lengths
 
 
 def _write_singles(fasta_fh, gff_fh, cluster_map, single_clusters, transcripts):
-    """Write singleton pass-through SuperTranscripts. Returns (count, bases)."""
+    """Write singleton pass-through SuperTranscripts. Returns (count, bases, lengths)."""
     count = 0
     bases = 0
+    lengths: list[int] = []
     for tag, clust in cluster_map.items():
         if clust not in single_clusters:
             continue
@@ -377,9 +408,11 @@ def _write_singles(fasta_fh, gff_fh, cluster_map, single_clusters, transcripts):
         fasta_fh.write(f">{clust} NoTrans:1,Whirls:0\n")
         fasta_fh.write(f"{seq}\n")
         gff_fh.write(anno)
+        seq_len = len(seq)
         count += 1
-        bases += len(seq)
-    return count, bases
+        bases += seq_len
+        lengths.append(seq_len)
+    return count, bases, lengths
 
 
 def _write_outputs(
@@ -389,20 +422,26 @@ def _write_outputs(
     cluster_map: dict[str, str],
     single_clusters: set[str],
     transcripts: dict[str, str],
-) -> tuple[int, int]:
+) -> tuple[int, int, list[int]]:
     """Write SuperDuper.fasta and SuperDuper.gff to *out_dir*.
 
-    Returns ``(n_written, total_bases)``.
+    Returns ``(n_written, total_bases, lengths)``.
     """
     with (
         open(out_dir / "SuperDuper.fasta", "w", encoding="utf-8") as ff,
         open(out_dir / "SuperDuper.gff", "w", encoding="utf-8") as fg,
     ):
-        n_multi, bases_multi = _write_multi(ff, fg, gene_order, results_map)
-        n_singles, bases_singles = _write_singles(
+        n_multi, bases_multi, lens_multi = _write_multi(
+            ff, fg, gene_order, results_map,
+        )
+        n_singles, bases_singles, lens_singles = _write_singles(
             ff, fg, cluster_map, single_clusters, transcripts,
         )
-    return n_multi + n_singles, bases_multi + bases_singles
+    return (
+        n_multi + n_singles,
+        bases_multi + bases_singles,
+        lens_multi + lens_singles,
+    )
 
 
 # ---------------------------------------------------------------------------
