@@ -207,13 +207,13 @@ def _log_input_summary(
     n_capped: int,
 ) -> None:
     """Print the input-side statistics table."""
-    avg_len = total_bases / n_transcripts if n_transcripts else 0
+    mean_len = total_bases / n_transcripts if n_transcripts else 0
     med_len = statistics.median(lengths) if lengths else 0
     n50 = _compute_n50(lengths)
     log.info("")
     log.info("  %-34s %s", "Transcripts in FASTA:", f"{n_transcripts:,}")
     log.info("  %-34s %s bp", "  Total bases:", f"{total_bases:,}")
-    log.info("  %-34s %s bp", "  Avg transcript length:", f"{avg_len:,.0f}")
+    log.info("  %-34s %s bp", "  Mean transcript length:", f"{mean_len:,.0f}")
     log.info("  %-34s %s bp", "  Median transcript length:", f"{med_len:,.0f}")
     log.info("  %-34s %s bp", "  N50:", f"{n50:,}")
     log.info("  %-34s %s", "Corset clusters (total):", f"{n_total_clusters:,}")
@@ -293,7 +293,7 @@ def _log_output_summary(
 ) -> None:
     """Print the output-side statistics table."""
     reduction_pct = (1 - n_written / n_transcripts) * 100 if n_transcripts else 0
-    avg_st_len = total_out_bases / n_written if n_written else 0
+    mean_st_len = total_out_bases / n_written if n_written else 0
     med_st_len = statistics.median(out_lengths) if out_lengths else 0
     n50 = _compute_n50(out_lengths)
     log.info("")
@@ -303,7 +303,7 @@ def _log_output_summary(
     if n_failed:
         log.warning("  %-34s %d", "  Failed:", n_failed)
     log.info("  %-34s %s bp", "  Total bases:", f"{total_out_bases:,}")
-    log.info("  %-34s %s bp", "  Avg SuperTranscript length:", f"{avg_st_len:,.0f}")
+    log.info("  %-34s %s bp", "  Mean SuperTranscript length:", f"{mean_st_len:,.0f}")
     log.info("  %-34s %s bp", "  Median SuperTranscript length:", f"{med_st_len:,.0f}")
     log.info("  %-34s %s bp", "  N50:", f"{n50:,}")
     log.info(
