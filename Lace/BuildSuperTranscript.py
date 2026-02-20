@@ -187,7 +187,7 @@ def _build_block_graph(
     transcripts: dict[str, str],
     blocks: list[AlignBlock],
     *,
-    max_edges: int = 100,
+    max_edges: int = 500,
 ) -> tuple[str, str, int]:
     """Construct a block-level splice graph from minimap2 alignment blocks.
 
@@ -421,7 +421,7 @@ def super_tran(
     transcripts: dict[str, str],
     *,
     verbose: bool = False,
-    max_edges: int = 100,
+    max_edges: int = 500,
     tmpdir: Path | None = None,
 ) -> ClusterResult:
     """Build a SuperTranscript for one cluster.

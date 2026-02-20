@@ -178,7 +178,7 @@ def split_and_build(
     # -- 5) Dispatch to ProcessPoolExecutor (L3, IO1) ----------------------
     tmpdir = os.environ.get("TMPDIR", "/tmp")
     out_dir.mkdir(parents=True, exist_ok=True)
-    max_edges = 100
+    max_edges = 500
 
     results_map: dict[str, ClusterResult] = {}
     gene_order: list[str] = [g for g, _ in sorted_genes]
