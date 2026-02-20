@@ -1,0 +1,10 @@
+[MAIN]
+# Lace pylint configuration — targets 10.00/10
+
+[DESIGN]
+# Pipeline orchestration functions legitimately need more locals/args
+# than the default 15/5 limits.
+max-locals = 25
+max-args = 8
+max-positional-arguments = 8
+max-statements = 60

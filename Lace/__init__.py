@@ -7,5 +7,6 @@ Version 2.0.0 — rewrite with:
 - In-memory cluster dispatch (eliminates ~376K NFS file operations)
 - Python 3.12+, modern typing, structured logging
 """
+# pylint: disable=invalid-name  # package name "Lace" follows upstream convention
 
 __version__ = "2.0.0"

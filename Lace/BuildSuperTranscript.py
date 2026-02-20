@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# pylint: disable=invalid-name  # module name follows upstream convention
 """Build a SuperTranscript for one cluster of transcripts.
 
 Rewrite of Lace 1.14.1 ``BuildSuperTranscript.py`` with:
@@ -230,6 +231,43 @@ def _create_block_nodes(
     return node_seq, block_to_node, pos_to_interval
 
 
+def _merge_one_block(
+    blk: AlignBlock,
+    intervals: dict[str, list[tuple[int, int]]],
+    block_to_node: dict[tuple[str, int], int],
+    pos_to_interval: dict[str, dict[int, int]],
+    union_fn: ...,
+) -> None:
+    """Walk one alignment block and union matched interval nodes."""
+    if blk.t_name == blk.q_name:
+        return
+    t_lookup = pos_to_interval.get(blk.t_name, {})
+    q_lookup = pos_to_interval.get(blk.q_name, {})
+    t_ivs = intervals.get(blk.t_name, [])
+    q_ivs = intervals.get(blk.q_name, [])
+
+    t_pos, q_pos = blk.t_start, blk.q_start
+    while t_pos < blk.t_end and q_pos < blk.q_end:
+        t_idx = t_lookup.get(t_pos)
+        q_idx = q_lookup.get(q_pos)
+        if t_idx is None or q_idx is None:
+            t_pos += 1
+            q_pos += 1
+            continue
+        t_node = block_to_node.get((blk.t_name, t_idx))
+        q_node = block_to_node.get((blk.q_name, q_idx))
+        if t_node is not None and q_node is not None:
+            t_len = t_ivs[t_idx][1] - t_ivs[t_idx][0]
+            q_len = q_ivs[q_idx][1] - q_ivs[q_idx][0]
+            if t_len == q_len:
+                union_fn(t_node, q_node)
+                t_pos = t_ivs[t_idx][1]
+                q_pos = q_ivs[q_idx][1]
+                continue
+        t_pos += 1
+        q_pos += 1
+
+
 def _merge_equivalent_blocks(
     blocks: list[AlignBlock],
     intervals: dict[str, list[tuple[int, int]]],
@@ -252,33 +290,7 @@ def _merge_equivalent_blocks(
             parent[max(ra, rb)] = min(ra, rb)
 
     for blk in blocks:
-        if blk.t_name == blk.q_name:
-            continue
-        t_lookup = pos_to_interval.get(blk.t_name, {})
-        q_lookup = pos_to_interval.get(blk.q_name, {})
-        t_ivs = intervals.get(blk.t_name, [])
-        q_ivs = intervals.get(blk.q_name, [])
-
-        t_pos, q_pos = blk.t_start, blk.q_start
-        while t_pos < blk.t_end and q_pos < blk.q_end:
-            t_idx = t_lookup.get(t_pos)
-            q_idx = q_lookup.get(q_pos)
-            if t_idx is None or q_idx is None:
-                t_pos += 1
-                q_pos += 1
-                continue
-            t_node = block_to_node.get((blk.t_name, t_idx))
-            q_node = block_to_node.get((blk.q_name, q_idx))
-            if t_node is not None and q_node is not None:
-                t_len = t_ivs[t_idx][1] - t_ivs[t_idx][0]
-                q_len = q_ivs[q_idx][1] - q_ivs[q_idx][0]
-                if t_len == q_len:
-                    union(t_node, q_node)
-                    t_pos = t_ivs[t_idx][1]
-                    q_pos = q_ivs[q_idx][1]
-                    continue
-            t_pos += 1
-            q_pos += 1
+        _merge_one_block(blk, intervals, block_to_node, pos_to_interval, union)
 
     # Flatten parent pointers
     for n in list(parent):
