@@ -17,3 +17,4 @@ build/
 .vscode/
 *.swp
 *~
+test/*_results/

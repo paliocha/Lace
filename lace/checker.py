@@ -20,7 +20,7 @@ import pickle
 import time
 from matplotlib.backends.backend_pdf import PdfPages
 from itertools import repeat
-from Lace.BuildSuperTranscript import get_annotation_line
+from lace.build_supertranscript import get_annotation_line
 
 ################################################################
 ###### Visualise blocks and metricise in SuperTranscript #######

@@ -24,4 +24,4 @@ jobs:
         pip install pylint networkx tqdm
     - name: Lint with pylint
       run: |
-        pylint Lace/__init__.py Lace/BuildSuperTranscript.py Lace/Lace_run.py setup.py --fail-under=9.0
+        pylint lace/__init__.py lace/build_supertranscript.py lace/lace_run.py setup.py --fail-under=10.0

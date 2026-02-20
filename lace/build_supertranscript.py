@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# pylint: disable=invalid-name  # module name follows upstream convention
 """Build a SuperTranscript for one cluster of transcripts.
 
 Rewrite of Lace 1.14.1 ``BuildSuperTranscript.py`` with:

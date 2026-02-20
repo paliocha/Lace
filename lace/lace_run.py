@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# pylint: disable=invalid-name  # module name follows upstream convention
 """Lace entry point -- parallelised SuperTranscript construction.
 
 Rewrite of Lace 1.14.1 ``Lace_run.py`` with:
@@ -29,8 +28,8 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from Lace import __version__
-from Lace.BuildSuperTranscript import (
+from lace import __version__
+from lace.build_supertranscript import (
     ClusterResult,
     get_annotation_line,
     super_tran,
@@ -184,6 +183,7 @@ def _group_by_cluster(
 
 def _log_input_summary(
     n_transcripts: int,
+    total_bases: int,
     n_total_clusters: int,
     n_multi: int,
     n_singletons: int,
@@ -191,8 +191,11 @@ def _log_input_summary(
     n_capped: int,
 ) -> None:
     """Print the input-side statistics table."""
+    avg_len = total_bases / n_transcripts if n_transcripts else 0
     log.info("")
     log.info("  %-34s %s", "Transcripts in FASTA:", f"{n_transcripts:,}")
+    log.info("  %-34s %s bp", "  Total bases:", f"{total_bases:,}")
+    log.info("  %-34s %s bp", "  Avg transcript length:", f"{avg_len:,.0f}")
     log.info("  %-34s %s", "Corset clusters (total):", f"{n_total_clusters:,}")
     log.info("  %-34s %s", "  Multi-transcript clusters:", f"{n_multi:,}")
     log.info("  %-34s %s", "  Singleton clusters:", f"{n_singletons:,}")
@@ -264,16 +267,20 @@ def _log_output_summary(
     n_singletons: int,
     n_failed: int,
     n_transcripts: int,
+    total_out_bases: int,
     elapsed: float,
 ) -> None:
     """Print the output-side statistics table."""
     reduction_pct = (1 - n_written / n_transcripts) * 100 if n_transcripts else 0
+    avg_st_len = total_out_bases / n_written if n_written else 0
     log.info("")
     log.info("  %-34s %s", "SuperTranscripts written:", f"{n_written:,}")
     log.info("  %-34s %s", "  Assembled (multi-transcript):", f"{n_assembled:,}")
     log.info("  %-34s %s", "  Pass-through (singletons):", f"{n_singletons:,}")
     if n_failed:
         log.warning("  %-34s %d", "  Failed:", n_failed)
+    log.info("  %-34s %s bp", "  Total bases:", f"{total_out_bases:,}")
+    log.info("  %-34s %s bp", "  Avg SuperTranscript length:", f"{avg_st_len:,.0f}")
     log.info(
         "  %-34s %.1f%% (%s \u2192 %s sequences)",
         "Redundancy reduction:",
@@ -305,13 +312,14 @@ def split_and_build(
 
     # -- 2) Parse FASTA file -----------------------------------------------
     transcripts, gene_of = _parse_transcripts(genome_path, cluster_map, single_clusters)
+    total_in_bases = sum(len(seq) for seq in transcripts.values())
 
     # -- 3) Group transcripts by cluster (in-memory, IO1) ------------------
     gene_transcripts, n_capped = _group_by_cluster(gene_of, transcripts, max_tran)
     n_multi = len(gene_transcripts)
 
     _log_input_summary(
-        len(transcripts), len(cluster_counts), n_multi,
+        len(transcripts), total_in_bases, len(cluster_counts), n_multi,
         len(single_clusters), max_tran, n_capped,
     )
 
@@ -325,7 +333,7 @@ def split_and_build(
     gene_order = [g for g, _ in sorted_genes]
 
     # -- 5) Write SuperDuper.fasta and SuperDuper.gff ----------------------
-    n_written = _write_outputs(
+    n_written, total_out_bases = _write_outputs(
         out_dir, gene_order, results_map, cluster_map,
         single_clusters, transcripts,
     )
@@ -333,13 +341,15 @@ def split_and_build(
     # -- 6) Summary --------------------------------------------------------
     _log_output_summary(
         n_written, n_multi - n_failed, len(single_clusters),
-        n_failed, len(transcripts), time.time() - start_time,
+        n_failed, len(transcripts),
+        total_out_bases, time.time() - start_time,
     )
 
 
 def _write_multi(fasta_fh, gff_fh, gene_order, results_map):
-    """Write multi-transcript SuperTranscripts. Returns count written."""
+    """Write multi-transcript SuperTranscripts. Returns (count, bases)."""
     count = 0
+    bases = 0
     for gene_id in gene_order:
         res = results_map.get(gene_id)
         if res is None or not res.seq:
@@ -351,12 +361,14 @@ def _write_multi(fasta_fh, gff_fh, gene_order, results_map):
         fasta_fh.write(f"{res.seq}\n")
         gff_fh.write(res.anno)
         count += 1
-    return count
+        bases += len(res.seq)
+    return count, bases
 
 
 def _write_singles(fasta_fh, gff_fh, cluster_map, single_clusters, transcripts):
-    """Write singleton pass-through SuperTranscripts. Returns count written."""
+    """Write singleton pass-through SuperTranscripts. Returns (count, bases)."""
     count = 0
+    bases = 0
     for tag, clust in cluster_map.items():
         if clust not in single_clusters:
             continue
@@ -366,7 +378,8 @@ def _write_singles(fasta_fh, gff_fh, cluster_map, single_clusters, transcripts):
         fasta_fh.write(f"{seq}\n")
         gff_fh.write(anno)
         count += 1
-    return count
+        bases += len(seq)
+    return count, bases
 
 
 def _write_outputs(
@@ -376,18 +389,20 @@ def _write_outputs(
     cluster_map: dict[str, str],
     single_clusters: set[str],
     transcripts: dict[str, str],
-) -> int:
+) -> tuple[int, int]:
     """Write SuperDuper.fasta and SuperDuper.gff to *out_dir*.
 
-    Returns the number of SuperTranscripts written.
+    Returns ``(n_written, total_bases)``.
     """
     with (
         open(out_dir / "SuperDuper.fasta", "w", encoding="utf-8") as ff,
         open(out_dir / "SuperDuper.gff", "w", encoding="utf-8") as fg,
     ):
-        n_multi = _write_multi(ff, fg, gene_order, results_map)
-        n_singles = _write_singles(ff, fg, cluster_map, single_clusters, transcripts)
-    return n_multi + n_singles
+        n_multi, bases_multi = _write_multi(ff, fg, gene_order, results_map)
+        n_singles, bases_singles = _write_singles(
+            ff, fg, cluster_map, single_clusters, transcripts,
+        )
+    return n_multi + n_singles, bases_multi + bases_singles
 
 
 # ---------------------------------------------------------------------------
@@ -465,7 +480,7 @@ def main(args: list[str] | None = None) -> None:
     )
 
     if parsed.alternate:
-        from Lace.Checker import Checker  # pylint: disable=import-outside-toplevel
+        from lace.checker import Checker  # pylint: disable=import-outside-toplevel
         cwd = os.getcwd()
         os.chdir(parsed.outputDir)
         log.info("Making alternate annotation and checks")

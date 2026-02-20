@@ -2,8 +2,8 @@ Bootstrap: docker
 From: docker.io/mambaorg/micromamba:1.5.8
 
 %files
-    # Copy Lace source tree into the container
-    Lace/ /opt/Lace/Lace
+    # Copy lace source tree into the container
+    lace/ /opt/Lace/lace
     setup.py /opt/Lace/setup.py
 
 %post
@@ -45,6 +45,6 @@ From: docker.io/mambaorg/micromamba:1.5.8
             --cores 16 -o output/
 
 %test
-    python -c "import Lace; print(f'Lace {Lace.__version__}')"
+    python -c "import lace; print(f'Lace {lace.__version__}')"
     minimap2 --version
     Lace --help

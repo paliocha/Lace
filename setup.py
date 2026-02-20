@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(name='Lace',
       version='2.0.0',
-      packages=['Lace'],
+      packages=['lace'],
       license='GPL3',
       python_requires='>=3.12',
       install_requires=['pandas>=2.2',
@@ -12,12 +12,12 @@ setup(name='Lace',
                         'tqdm>=4.66'],
       entry_points={
           'console_scripts': [
-              'BuildSuperTranscript=Lace.BuildSuperTranscript:main',
-              'Lace_Checker=Lace.Checker:main',
-              'Lace=Lace.Lace_run:main',
-              'Mobius-as=Lace.Mobius_as:main',
-              'Mobius=Lace.Mobius:main',
-              'STViewer=Lace.STViewer:main'
+              'BuildSuperTranscript=lace.build_supertranscript:main',
+              'Lace_Checker=lace.checker:main',
+              'Lace=lace.lace_run:main',
+              'Mobius-as=lace.mobius_as:main',
+              'Mobius=lace.mobius:main',
+              'STViewer=lace.st_viewer:main'
           ]
       },
 )
