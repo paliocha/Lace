@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint networkx tqdm
+        pip install pylint networkx tqdm setuptools
     - name: Lint with pylint
       run: |
         pylint lace/__init__.py lace/build_supertranscript.py lace/lace_run.py setup.py --fail-under=10.0

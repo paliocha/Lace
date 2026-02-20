@@ -3,7 +3,7 @@ test/lace_fpra_v2_results/
 test/*.out
 test/*.err
 
-# Container images
+# Container images (distributed as GitHub release assets)
 *.sif
 
 # Python
