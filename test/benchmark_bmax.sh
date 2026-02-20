@@ -16,7 +16,7 @@ set -euo pipefail
 SIF="/mnt/users/martpali/AnnualPerennial/Lace/lace_2.0.sif"
 TRINITY="/mnt/project/FjellheimLab/martpali/AnnualPerennial/assemblies/BMAX-Trinity1/BMAX-Trinity.fasta"
 CLUSTERS="/mnt/project/FjellheimLab/martpali/AnnualPerennial/nf-denovoslim/BMAX/clustering/corset-clusters.txt"
-OUTDIR="$TMPDIR/lace_bmax_v2"
+OUTDIR="$TMPDIR"
 CORES=${SLURM_CPUS_PER_TASK:-16}
 
 # v1.14.1 published output from the nf-denovoslim pipeline
@@ -29,8 +29,6 @@ for f in "$SIF" "$TRINITY" "$CLUSTERS"; do
         exit 1
     fi
 done
-
-mkdir -p "$OUTDIR"
 
 echo "================================================================"
 echo "Lace 2.0 BMAX benchmark"

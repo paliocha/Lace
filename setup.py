@@ -1,3 +1,4 @@
+"""Lace package setup."""
 from setuptools import setup
 
 setup(name='Lace',

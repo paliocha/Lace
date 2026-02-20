@@ -16,7 +16,7 @@ set -euo pipefail
 SIF="/mnt/users/martpali/AnnualPerennial/Lace/lace_2.0.sif"
 TRINITY="/mnt/project/FjellheimLab/martpali/AnnualPerennial/assemblies/FPRA-Trinity1/FPRA-Trinity.fasta"
 CLUSTERS="/mnt/project/FjellheimLab/martpali/AnnualPerennial/nf-denovoslim/FPRA/clustering/corset-clusters.txt"
-OUTDIR="$TMPDIR/lace_fpra_v2"
+OUTDIR="$TMPDIR"
 CORES=${SLURM_CPUS_PER_TASK:-16}
 
 # Validate inputs exist
@@ -26,8 +26,6 @@ for f in "$SIF" "$TRINITY" "$CLUSTERS"; do
         exit 1
     fi
 done
-
-mkdir -p "$OUTDIR"
 
 echo "================================================================"
 echo "Lace 2.0 FPRA benchmark"
