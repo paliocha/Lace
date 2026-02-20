@@ -1,16 +1,16 @@
-# Example — BMAX 1 % subsample
+# Example — *Briza maxima* 1 % subsample
 
-Quick-start example using 1 % of *Bromus maximus* Trinity transcripts
-(2 708 clusters, 4 583 transcripts).
+Quick-start example using 1 % of *Briza maxima* (NCBI taxid:29665)
+Trinity transcripts (2 708 clusters, 4 583 transcripts).
 
 ## Run
 
 ```bash
-Lace bmax_1pct.fasta bmax_1pct_clusters.txt --cores 4 -o out
+Lace briza_maxima_1pct.fasta briza_maxima_1pct_clusters.txt --cores 4 -o out
 ```
 
-The full BMAX dataset (270 870 clusters, 1.17 M transcripts) completes
-in ~95 seconds on 16 cores.
+The full *Briza maxima* dataset (270 870 clusters, 1.17 M transcripts)
+completes in ~95 seconds on 16 cores.
 
 ## Regenerate
 

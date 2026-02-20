@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Downsample BMAX to ~10% of clusters for a quick Lace example."""
+"""Downsample Briza maxima (NCBI taxid:29665) to a quick Lace example."""
 
 import random
 import sys
@@ -18,8 +18,8 @@ FASTA_IN = Path(
 )
 
 OUT_DIR = Path(__file__).resolve().parent
-CLUSTERS_OUT = OUT_DIR / "bmax_1pct_clusters.txt"
-FASTA_OUT = OUT_DIR / "bmax_1pct.fasta"
+CLUSTERS_OUT = OUT_DIR / "briza_maxima_1pct_clusters.txt"
+FASTA_OUT = OUT_DIR / "briza_maxima_1pct.fasta"
 
 # --- 1. Sample 10% of unique cluster names ---
 all_lines = CLUSTERS_IN.read_text().strip().split("\n")

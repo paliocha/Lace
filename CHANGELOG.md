@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.0] — 2025-07-16
+## [2.0.0] — 2026-02-20
 
 ### Complete rewrite of Lace
 
@@ -19,18 +19,18 @@ for SuperTranscript construction.
   redundancy reduction %, `--maxTran` cap warnings
 - Pylint 10.00/10
 
-### Benchmark — BMAX (*Bromus maximus*, 1.17 M transcripts)
+### Benchmark — *Briza maxima* (NCBI taxid:29665, 1.17 M transcripts)
 
 | Metric | v1.14.1 | v2.0.0 | Change |
 |---|---:|---:|---:|
 | Wall-clock time | 19 938 s | 94.5 s | **211× faster** |
 | SuperTranscript count | 270 870 | 270 870 | identical |
 | Total bases | 299 136 517 bp | 461 233 884 bp | **+54.2 %** |
-| Avg SuperTranscript length | ~1 104 bp | 1 703 bp | **+54.3 %** |
+| Median SuperTranscript length | 634 bp | 643 bp | **+1.4 %** |
 
-The increase in total bases and average length reflects the block-level
-algorithm retaining more biological sequence from multi-transcript clusters
-compared to the de Bruijn graph approach in v1.14.1.
+The increase in total bases reflects the block-level algorithm retaining
+more biological sequence from multi-transcript clusters compared to the
+de Bruijn graph approach in v1.14.1.
 
 ### Container
 
