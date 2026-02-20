@@ -99,10 +99,16 @@ See the [wiki](https://github.com/paliocha/Lace/wiki/Algorithm) for details.
 
 ## References
 
-- Davidson et al. (2017) SuperTranscripts. *Genome Biology* 18:148.
+- Davidson et al. (2017) SuperTranscripts: a data driven reference for analysis and visualisation of transcriptomes. *Genome Biology* 18:148.
   [doi:10.1186/s13059-017-1284-1](https://doi.org/10.1186/s13059-017-1284-1)
-- Li (2018) Minimap2. *Bioinformatics* 34(18):3094–3100.
+- Davidson & Oshlack (2014) Corset: enabling differential gene expression analysis for *de novo* assembled transcriptomes. *Genome Biology* 15:410.
+  [doi:10.1186/s13059-014-0410-6](https://doi.org/10.1186/s13059-014-0410-6)
+- Li (2018) Minimap2: pairwise alignment for nucleotide sequences. *Bioinformatics* 34(18):3094–3100.
   [doi:10.1093/bioinformatics/bty191](https://doi.org/10.1093/bioinformatics/bty191)
+- Heber et al. (2002) Splicing graphs and EST assembly problem. *Bioinformatics* 18(S1):S181–S188.
+  [doi:10.1093/bioinformatics/18.suppl_1.S181](https://doi.org/10.1093/bioinformatics/18.suppl_1.S181)
+- Grabherr et al. (2011) Trinity: reconstructing a full-length transcriptome without a genome from RNA-Seq data. *Nature Biotechnology* 29(7):644–652.
+  [doi:10.1038/nbt.1883](https://doi.org/10.1038/nbt.1883)
 
 ## Licence
 
