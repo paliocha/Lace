@@ -1,0 +1,19 @@
+# Test outputs and benchmark results
+test/lace_fpra_v2_results/
+test/*.out
+test/*.err
+
+# Container images
+*.sif
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Editor
+.vscode/
+*.swp
+*~

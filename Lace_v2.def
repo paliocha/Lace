@@ -10,8 +10,8 @@ From: docker.io/mambaorg/micromamba:1.5.8
     # Python 3.13 + minimap2 + core dependencies
     # NOTE: matplotlib intentionally excluded -- unused in pipeline
     micromamba install -y -n base -c conda-forge -c bioconda \
-        "python>=3.13,<3.14" \
-        minimap2=2.28 \
+        "python>=3.12" \
+        "minimap2>=2.28" \
         "numpy>=1.26" \
         "pandas>=2.2" \
         "networkx>=3.4" \

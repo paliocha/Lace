@@ -38,16 +38,39 @@ from Lace.BuildSuperTranscript import (
 log = logging.getLogger("lace")
 
 # ---------------------------------------------------------------------------
-# Banner
+# Banner -- resembles the Lace logo (blue double-helix swirl)
+# https://github.com/Oshlack/Lace/blob/master/WikiFigs/logo.png
+# Colour: Lace blue RGB(45,79,203) via ANSI true-colour escape
 # ---------------------------------------------------------------------------
 
-BANNER = f"""\
- __      __    ____  ____
-(  )    / _\\  /    )(  __)
-/  (_/\\/    \\(  (__  ) _)
-\\_____/\\_/\\_/\\_____)(____)\u0020
-Version {__version__}  (minimap2 \u00b7 block-graph \u00b7 Python {sys.version_info.major}.{sys.version_info.minor})
-"""
+_BLUE = "\033[38;2;45;79;203m"
+_BOLD = "\033[1m"
+_RESET = "\033[0m"
+
+BANNER = (
+    f"{_BLUE}\n"
+    "                \u256d\u2500\u2500\u2500\u256e\n"
+    "            \u256d\u2500\u2500\u2500\u256f   \u2570\u2500\u2500\u2500\u256e\n"
+    "         \u256d\u2500\u2500\u256f    \u256d\u256e  \u256d\u2500\u2500\u256f           \u256d\u2500\u2500\u2500\u256e\n"
+    "        \u256d\u256f      \u256d\u256f\u2570\u256e \u2502           \u256d\u2500\u2500\u256f   \u2570\u2500\u2500\u256e\n"
+    "       \u256d\u256f      \u256d\u256f  \u2502 \u2502         \u256d\u2500\u256f   \u256d\u2500\u256e   \u2570\u256e\n"
+    "       \u2502       \u2502   \u256d\u256f\u256d\u256f        \u2502    \u256d\u256f  \u2570\u256e   \u2502       \u256d\u2500\u2500\u2500\u256e\n"
+    "       \u2502       \u2502  \u256d\u256f\u256d\u256f         \u2502   \u256d\u256f    \u2502  \u256d\u256f    \u256d\u2500\u2500\u256f   \u2570\u2500\u2500\u256e\n"
+    "       \u2502       \u2570\u256e\u256d\u256f\u256d\u256f          \u2570\u256e  \u2502    \u256d\u256f \u256d\u256f    \u256d\u256f   \u256d\u2500\u256e   \u2570\u256e\n"
+    "       \u2570\u256e    \u256d\u2500\u2500\u2570\u256f\u256d\u256f            \u2570\u256e \u2570\u256e  \u256d\u256f\u256d\u256f     \u2502   \u256d\u256f  \u2570\u2500\u2500\u2500\u2500\u256f\n"
+    "        \u2570\u2500\u2500\u2500\u2500\u256f  \u256d\u2500\u256f              \u2570\u2500\u2500\u2570\u2500\u2500\u256f\u256d\u256f      \u2570\u2500\u2500\u2500\u256f  \u256d\u256f\n"
+    "          \u2570\u2500\u2500\u2500\u2500\u2500\u256f                   \u2570\u2500\u2500\u2500\u2500\u256f        \u2570\u2500\u2500\u2500\u2500\u2500\u256f\n"
+    "        \u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\u2572\n"
+    "     \u256d\u2500\u2500\u256f  \u256d\u2500\u2500\u2500\u2500\u2500\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u2500 \u2500\n"
+    "   \u256d\u2500\u256f     \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n"
+    f"  \u2500\u256f               \u2570\u2500 \u2500 \u2500{_RESET}\n"
+    f"  {_BOLD}\u257b                          \u257b  \u257b \u257b  \u257b   \u257b  \u257b\n"
+    f"  \u2503     \u257a\u2501\u2501\u2578 \u257a\u2501\u2501\u2578 \u257a\u2501\u2501\u2578     \u2503\u2501\u252b \u2503  \u2503 \u2503 \u2503 \u257b\u2501\u2578 \u2503\u2578\n"
+    f"  \u2517\u2501\u2578 \u2579 \u2579 \u2579 \u2579  \u2579 \u2579  \u2579 \u2579   \u2517\u2501\u251b \u2517\u2501\u2578\u2517\u2501\u251b \u2517\u2501\u2578\u2579\u2501\u2578 \u2579 {_RESET}\n"
+    f"   {_BLUE}\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c\u254c{_RESET}\n"
+    f"   Version {__version__}  minimap2 \u00b7 block-graph \u00b7 Python "
+    f"{sys.version_info.major}.{sys.version_info.minor}\n"
+)
 
 # ---------------------------------------------------------------------------
 # Worker -- called in child processes  (IO1 -- receives data in-memory)
