@@ -69,8 +69,7 @@ echo "Lace 2.0 completed in ${ELAPSED}s ($(date -ud @${ELAPSED} +%H:%M:%S))"
 echo "================================================================"
 
 # ── Copy results back to test/ (on NFS, for comparison) ─────────────
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RESULT_DIR="${SCRIPT_DIR}/lace_fpra_v2_results"
+RESULT_DIR="/mnt/users/martpali/AnnualPerennial/Lace/test/lace_fpra_v2_results"
 mkdir -p "$RESULT_DIR"
 cp "$OUTDIR/SuperDuper.fasta" "$RESULT_DIR/"
 cp "$OUTDIR/SuperDuper.gff"   "$RESULT_DIR/" 2>/dev/null || true
