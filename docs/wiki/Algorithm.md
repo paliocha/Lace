@@ -73,5 +73,5 @@ The block-level approach retains **+54% more sequence** on the *Briza maxima* be
 ## References
 
 - Li, H. (2018). Minimap2: pairwise alignment for nucleotide sequences. *Bioinformatics*, 34(18), 3094–3100. [doi:10.1093/bioinformatics/bty191](https://doi.org/10.1093/bioinformatics/bty191)
-- Heber, S., Alekseyev, M., Sze, S.H., Tang, H. & Pevzner, P.A. (2002). Splicing graphs and EST assembly problem. *Bioinformatics*, 18(suppl_1), S181–S188. [doi:10.1093/bioinformatics/18.suppl_1.S181](https://doi.org/10.1093/bioinformatics/18.suppl_1.S181)
+- Heber, S., Alekseyev, M., Sze, S.H., Tang, H. & Pevzner, P.A. (2002). Splicing graphs and EST assembly problem. *Bioinformatics*, 18(S1), S181–S188. [doi:10.1093/bioinformatics/18.suppl_1.S181](https://doi.org/10.1093/bioinformatics/18.suppl_1.S181)
 - Davidson, N.M., Hawkins, A.D.K. & Oshlack, A. (2017). SuperTranscripts: a data driven reference for analysis and visualisation of transcriptomes. *Genome Biology*, 18, 148. [doi:10.1186/s13059-017-1284-1](https://doi.org/10.1186/s13059-017-1284-1)
