@@ -4,7 +4,7 @@ Build **SuperTranscripts** — one consensus sequence per gene — from a
 clustered *de novo* transcriptome assembly.
 
 Lace takes a FASTA of transcripts and a cluster file (e.g. from
-[Corset](https://github.com/paliocha/Corset), mmseqs2, or CD-HIT) and
+[Corset](https://github.com/paliocha/Corset), MMseqs2, or CD-HIT) and
 produces a single SuperTranscript for each gene by aligning within-cluster
 transcripts with **minimap2** and threading them through a **block-level
 directed graph**.
