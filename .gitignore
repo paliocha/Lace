@@ -1,10 +1,13 @@
 # Test outputs and benchmark results
-test/lace_fpra_v2_results/
+test/*_results/
 test/*.out
 test/*.err
 
 # Container images (distributed as GitHub release assets)
 *.sif
+
+# SLURM job logs
+slurm-*.out
 
 # Python
 __pycache__/
@@ -17,4 +20,3 @@ build/
 .vscode/
 *.swp
 *~
-test/*_results/

@@ -242,6 +242,7 @@ def _dispatch_workers(
     n_multi = len(sorted_genes)
     results_map: dict[str, ClusterResult] = {}
     n_failed = 0
+    n_no_align = 0
 
     log.info(
         "Building %s multi-transcript clusters with %d workers "
@@ -266,6 +267,8 @@ def _dispatch_workers(
                 try:
                     _, result = future.result()
                     results_map[gene_id] = result
+                    if result.no_align:
+                        n_no_align += 1
                 except (RuntimeError, OSError) as exc:
                     log.error(
                         "Processing cluster %s: FAILED to construct: %s",
@@ -275,6 +278,11 @@ def _dispatch_workers(
                     n_failed += 1
                 pbar.update(1)
 
+    if n_no_align:
+        log.info(
+            "%s cluster(s) had no minimap2 alignments — used longest transcript",
+            f"{n_no_align:,}",
+        )
     if n_failed:
         log.warning("%d cluster(s) failed to construct", n_failed)
 

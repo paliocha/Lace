@@ -54,6 +54,7 @@ class ClusterResult(NamedTuple):
     anno: str
     whirl_status: int
     transcript_count: int
+    no_align: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -492,13 +493,9 @@ def super_tran(
         blocks = _run_minimap2(fasta_path)
 
         if not blocks:
-            log.warning(
-                "No minimap2 alignments for cluster %s, using longest transcript",
-                gene_id,
-            )
             longest = max(transcripts.values(), key=len)
             anno = get_annotation_line(gene_id, "1", str(len(longest)), gene_id)
-            return ClusterResult(longest, anno, 0, transcript_count)
+            return ClusterResult(longest, anno, 0, transcript_count, no_align=True)
 
         seq, _anno, whirl_status = _build_block_graph(
             transcripts, blocks, max_edges=max_edges,
