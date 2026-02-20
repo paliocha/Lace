@@ -1,0 +1,53 @@
+Bootstrap: docker
+From: docker.io/mambaorg/micromamba:1.5.8
+
+%files
+    # Copy lace-fast source tree into the container
+    lace-fast/ /opt/lace-fast
+
+%post
+    # Python 3.13 + minimap2 + core dependencies (C1-C5)
+    # NOTE: matplotlib is intentionally excluded — unused in pipeline (C3)
+    micromamba install -y -n base -c conda-forge -c bioconda \
+        "python>=3.13,<3.14" \
+        minimap2=2.28 \
+        "numpy>=1.26" \
+        "pandas>=2.2" \
+        "networkx>=3.4" \
+        tqdm \
+        pip \
+        && micromamba clean --all --yes
+
+    # Install lace-fast from local source (editable for debugging)
+    /opt/conda/bin/pip install --no-deps /opt/lace-fast
+
+%environment
+    export PATH="/opt/conda/bin:${PATH}"
+
+%labels
+    Author martpali
+    Version 2.0.0
+    Description lace-fast 2.0 — minimap2, block-graph, Python 3.13
+
+%help
+    lace-fast 2.0: High-performance SuperTranscript construction.
+
+    Rewrite of Lace 1.14.1 with:
+      - minimap2 replacing BLAT (30-100x faster, MIT licence)
+      - Block-level splice graph (100-1000x fewer graph nodes)
+      - Single-pass DFS cycle breaking (exponential -> O(V+E))
+      - In-memory cluster dispatch (eliminates ~376K NFS file ops)
+      - Python 3.13 with modern typing and structured logging
+
+    Usage:
+        apptainer exec lace_fast_2.0.sif lace-fast input.fasta clusters.txt \
+            --cores 16 -o output/
+
+    The CLI is fully compatible with the original Lace:
+        lace-fast <transcripts.fasta> <clusters.txt> [--cores N] [-o DIR]
+
+%test
+    # Verify installation
+    python -c "import lace_fast; print(f'lace-fast {lace_fast.__version__}')"
+    minimap2 --version
+    lace-fast --help

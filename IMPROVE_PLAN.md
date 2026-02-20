@@ -425,3 +425,55 @@ Target: **Lace BMAX < 15 minutes on 16 cores** — comparable to Corset.
 | `nextflow.config` | Container path |
 | `CHANGELOG.md` | Document Lace upgrade |
 | `CLAUDE.md` | Update Lace section |
+---
+
+## Implementation Log
+
+### 2026-02-20 — Initial implementation (Tiers 0–4)
+
+All tiers implemented in a single pass into `lace-fast/`:
+
+| File | Tiers | Notes |
+|------|-------|-------|
+| `lace-fast/lace_fast/build_supertranscript.py` | H1–H14, IO1–IO3, A1–A3 | Full rewrite: minimap2 PAF parsing, block-level splice graph with union-find merging, DFS cycle breaking via `nx.find_cycle`, `str.maketrans` reverse complement, structured logging |
+| `lace-fast/lace_fast/run.py` | H1–H14, IO1, L3–L5 | `ProcessPoolExecutor` + `as_completed`, largest-first scheduling, `tqdm` progress, f-string banner, `argparse` clean-up |
+| `lace-fast/pyproject.toml` | C4 | PEP 621 metadata, `>=3.12` requirement, no matplotlib |
+| `lace-fast/Lace_fast.def` | C1–C5 | Python 3.13, minimap2 2.28, pip install from source |
+| `lace-fast/build.sh` | — | Container build helper |
+
+#### BLAT vs minimap2 vs miniprot2
+
+The plan specifies **minimap2**, not miniprot2. Key distinction:
+
+- **minimap2**: nucleotide ↔ nucleotide aligner, `-X` all-vs-all mode.
+  Direct replacement for BLAT in Lace's transcript alignment use case.
+- **miniprot2**: protein → genome aligner. **Wrong tool** — Lace operates
+  on nucleotide transcript sequences and needs nt-level block coordinates.
+
+minimap2 flags used: `-c -X --eqx -k15 -w5 -N50 -p0.98`
+
+#### Architecture decisions
+
+1. **Block-level graph**: Uses alignment breakpoints to partition each
+   transcript into intervals. Blocks across transcripts are merged via
+   union-find when they span identical-length aligned regions. Produces
+   ~10–30 nodes per cluster vs ~10 000 in the original.
+
+2. **Cycle breaking**: Replaced `while len(whirls) > 0: nx.simple_cycles()`
+   loop with iterative `nx.find_cycle()` + node duplication. Each iteration
+   finds and breaks exactly one cycle. Much faster than enumerating all
+   cycles (Johnson's algorithm is worst-case exponential).
+
+3. **In-memory dispatch**: Sequences passed as `dict[str, str]` via pickle
+   IPC. Workers write temp FASTA to `$TMPDIR` (node-local SSD) only for
+   minimap2 invocation, then delete immediately.
+
+4. **Python 3.13**: Container targets 3.13 for PEP 709 inlined comprehensions,
+   specializing adaptive interpreter, and general 5–15% speedup over 3.10.
+
+#### Remaining work
+
+- [ ] Build container and validate on BMAX 10-cluster subset
+- [ ] Full BMAX validation run, diff SuperDuper.fasta
+- [ ] Update `nf-denovoslim/modules/lace.nf` container path
+- [ ] Benchmark and record timings
