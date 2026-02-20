@@ -40,7 +40,7 @@ Lace 2.0 logs a comprehensive before/after summary to stderr:
     Mean transcript length:          677 bp
     Median transcript length:        429 bp
     N50:                             1,071 bp
-  Corset clusters (total):          270,870
+  Transcript clusters (total):     270,870
     Multi-transcript clusters:       116,458
     Singleton clusters:              154,412
 

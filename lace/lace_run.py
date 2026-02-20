@@ -110,13 +110,13 @@ def _worker(
 # ---------------------------------------------------------------------------
 
 
-def _parse_clusters(corset_path: Path) -> dict[str, str]:
-    """Parse Corset cluster file -> {transcript_id: cluster_id}."""
+def _parse_clusters(cluster_path: Path) -> dict[str, str]:
+    """Parse cluster file -> {transcript_id: cluster_id}."""
     cluster_map: dict[str, str] = {}
-    if not corset_path.is_file():
+    if not cluster_path.is_file():
         return cluster_map
-    log.info("Parsing cluster file %s", corset_path)
-    with open(corset_path, encoding="utf-8") as fh:
+    log.info("Parsing cluster file %s", cluster_path)
+    with open(cluster_path, encoding="utf-8") as fh:
         for line in fh:
             parts = line.split()
             if len(parts) >= 2:
@@ -216,7 +216,7 @@ def _log_input_summary(
     log.info("  %-34s %s bp", "  Mean transcript length:", f"{mean_len:,.0f}")
     log.info("  %-34s %s bp", "  Median transcript length:", f"{med_len:,.0f}")
     log.info("  %-34s %s bp", "  N50:", f"{n50:,}")
-    log.info("  %-34s %s", "Corset clusters (total):", f"{n_total_clusters:,}")
+    log.info("  %-34s %s", "Transcript clusters (total):", f"{n_total_clusters:,}")
     log.info("  %-34s %s", "  Multi-transcript clusters:", f"{n_multi:,}")
     log.info("  %-34s %s", "  Singleton clusters:", f"{n_singletons:,}")
     log.info("  %-34s %d", "  Max transcripts/cluster (--maxTran):", max_tran)
@@ -318,7 +318,7 @@ def _log_output_summary(
 
 def split_and_build(
     genome_path: Path,
-    corset_path: Path,
+    cluster_path: Path,
     n_cores: int,
     max_tran: int,
     out_dir: Path,
@@ -326,9 +326,9 @@ def split_and_build(
     """Parse inputs, dispatch clusters to workers, write outputs."""
     start_time = time.time()
 
-    # -- 1) Parse Corset cluster file --------------------------------------
+    # -- 1) Parse cluster file ----------------------------------------------
     log.info("Parsing cluster assignments...")
-    cluster_map = _parse_clusters(corset_path)
+    cluster_map = _parse_clusters(cluster_path)
 
     cluster_counts: dict[str, int] = {}
     for clust in cluster_map.values():
@@ -464,7 +464,7 @@ def main(args: list[str] | None = None) -> None:
     parser.add_argument(
         "ClusterFile",
         help="Tab-delimited file mapping transcripts to clusters "
-             "(e.g. Corset output)",
+             "(e.g. Corset, mmseqs2, or CD-HIT output)",
     )
     parser.add_argument(
         "--cores", type=int, default=1,
@@ -512,7 +512,7 @@ def main(args: list[str] | None = None) -> None:
 
     split_and_build(
         genome_path=Path(parsed.TranscriptsFile),
-        corset_path=Path(parsed.ClusterFile),
+        cluster_path=Path(parsed.ClusterFile),
         n_cores=parsed.cores,
         max_tran=parsed.maxTran,
         out_dir=out_dir,
