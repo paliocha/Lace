@@ -28,7 +28,7 @@ Lace transcripts.fasta clusters.txt -o out/
 | Graph | Coloured de Bruijn | Block-level directed |
 | Parallelism | GNU Parallel | ProcessPoolExecutor |
 | Python | 2.7 / 3.x | 3.12+ |
-| Performance (BMAX, 1.17 M tx) | 5 h 32 min | 94.5 s (**211× faster**) |
+| Performance (*Briza maxima*, 1.17 M tx) | 5 h 32 min | 94.5 s (**211× faster**) |
 
 See [CHANGELOG.md](CHANGELOG.md) for full details.
 
